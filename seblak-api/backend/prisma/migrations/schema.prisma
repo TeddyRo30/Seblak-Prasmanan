@@ -1,0 +1,373 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== ENUMS =====
+
+enum UserRole {
+  customer
+  admin
+  kitchen_staff
+  driver
+  cashier
+}
+
+enum OrderType {
+  DINE_IN
+  TAKE_AWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PREPARING
+  READY
+  PICKING
+  ON_DELIVERY
+  PICKED_UP
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+  BANK_TRANSFER
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+enum PaymentGateway {
+  NONE
+  MIDTRANS
+  IPAYMU
+}
+
+enum InventoryAction {
+  ORDER_CREATED
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  STOCK_IN
+  STOCK_OUT
+  MANUAL_ADJUSTMENT
+  LOW_STOCK_WARNING
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_DELIVERY
+  REST
+  INACTIVE
+}
+
+enum LevelPedas {
+  TIDAK_PEDAS
+  SEDANG
+  PEDAS
+}
+
+enum KuahVarian {
+  NYEMEK
+  NORMAL
+  BANJIR
+}
+
+enum TelurType {
+  CEPLOK
+  ORAK_ARIK
+}
+
+enum RasaType {
+  ASIN
+  MANIS
+}
+
+enum MenuItemUnit {
+  PCS
+  GRAM
+  BUNCH
+}
+
+// ===== MODELS =====
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  passwordHash String
+  fullName  String
+  phone     String?
+  role      UserRole @default(customer)
+  isActive  Boolean  @default(true)
+
+  addresses Address[]
+  orders    Order[]
+  activityLogs ActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String
+  fullAddress String
+  latitude  Float
+  longitude Float
+  isDefault Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders    Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model MenuCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  description String?
+  displayOrder Int    @default(0)
+
+  items     MenuItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id        String   @id @default(cuid())
+  categoryId String
+  name      String
+  description String?
+  pricePerUnit Int
+  unit      MenuItemUnit
+  stockQuantity Int    @default(0)
+  lowStockThreshold Int @default(10)
+  imageUrl  String?
+  isAvailable Boolean @default(true)
+  displayOrder Int    @default(0)
+
+  category  MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  inventoryLogs InventoryLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@map("menu_items")
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  orderNumber String @unique
+  customerId String
+  assignedDriverId String?
+  
+  orderType OrderType
+  status    OrderStatus @default(NEW)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+
+  levelPedas LevelPedas @default(SEDANG)
+  kuahVarian KuahVarian @default(NORMAL)
+  telurType TelurType @default(CEPLOK)
+  rasaType RasaType @default(ASIN)
+
+  subtotal  Int       @default(0)
+  deliveryFee Int     @default(0)
+  discount  Int       @default(0)
+  total     Int       @default(0)
+
+  idempotencyKey String? @unique
+
+  inventoryDecrementedAt DateTime?
+
+  changedByUserId String?
+  statusChangeReason String?
+
+  tableNumber Int?
+
+  pickupTime String?
+  customerNameTakeaway String?
+  customerPhoneTakeaway String?
+
+  deliveryAddress String?
+  deliveryLatitude Float?
+  deliveryLongitude Float?
+  deliveryTime DateTime?
+  customerNameDelivery String?
+  customerPhoneDelivery String?
+
+  notes String?
+
+  customer  User      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  driver    User?     @relation("DriverOrders", fields: [assignedDriverId], references: [id])
+  items     OrderItem[]
+  payment   Payment?
+  statusHistory OrderStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+
+  @@index([customerId])
+  @@index([assignedDriverId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([levelPedas])
+  @@index([telurType])
+  @@index([rasaType])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  menuItemId String
+  quantity  Int
+  unit      MenuItemUnit
+  pricePerUnit Int
+  subtotal  Int
+  notes     String?
+
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem  MenuItem  @relation(fields: [menuItemId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@map("order_items")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  paymentMethod PaymentMethod
+  gateway   PaymentGateway @default(NONE)
+  amount    Int
+  status    PaymentStatus @default(PENDING)
+  transactionId String?
+  referenceId String?
+  metadata  Json?
+  notes     String?
+  confirmedAt DateTime?
+
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transactions PaymentTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@map("payments")
+}
+
+model PaymentTransaction {
+  id        String   @id @default(cuid())
+  paymentId String
+  gateway   PaymentGateway
+  transactionId String
+  status    PaymentStatus
+  amount    Int
+  responseData Json?
+
+  payment   Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([paymentId])
+  @@map("payment_transactions")
+}
+
+model Driver {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  vehicleInfo String
+  status    DriverStatus @default(AVAILABLE)
+  currentLat Float?
+  currentLng Float?
+  rating    Float    @default(5.0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("drivers")
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  previousStatus OrderStatus?
+  newStatus OrderStatus
+  changedBy String?
+  reason    String?
+  changedAt DateTime  @default(now())
+
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_status_history")
+}
+
+model InventoryLog {
+  id        String   @id @default(cuid())
+  menuItemId String
+  action    InventoryAction
+  quantityChange Int
+  quantityBefore Int
+  quantityAfter Int
+  referenceId String?
+  notes     String?
+  createdBy String?
+
+  menuItem  MenuItem  @relation(fields: [menuItemId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([menuItemId])
+  @@map("inventory_logs")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  resourceType String
+  resourceId String?
+  changes   Json?
+  ipAddress String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("activity_logs")
+}
