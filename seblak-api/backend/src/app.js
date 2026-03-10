@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import menuRoutes from './routes/menu.js';
+import orderRoutes from './routes/order.js';
 
 const app = express();
 
@@ -53,6 +54,9 @@ app.use('/api/v1/auth', authRoutes);
 
 // Menu routes
 app.use('/api/v1/menu', menuRoutes);
+
+// Order routes
+app.use('/api/v1/orders', orderRoutes);
 
 // API v1 status
 app.get('/api/v1', (req, res) => {
