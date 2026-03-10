@@ -1,0 +1,776 @@
+{
+  "_type": "export",
+  "__exportFormat": 4,
+  "__exportDate": "2024-01-15T14:00:00.000Z",
+  "__exportSource": "insomnia.desktop:v8.6.0",
+  "resources": [
+    {
+      "_id": "wrk_seblak_api",
+      "_type": "workspace",
+      "name": "Seblak Prasmanan API",
+      "description": "Complete REST API for Seblak Prasmanan - Single merchant prasmanan self-service food app",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_staging",
+      "_type": "environment",
+      "parentId": "wrk_seblak_api",
+      "name": "Staging (Local)",
+      "data": {
+        "base_url": "http://localhost:3000/api/v1",
+        "access_token": "",
+        "refresh_token": "",
+        "user_id": "",
+        "user_email": "customer@example.com",
+        "user_password": "SecurePassword123!",
+        "order_id": "",
+        "menu_item_id": "",
+        "admin_token": "",
+        "admin_email": "admin@seblak.com",
+        "admin_password": "AdminPassword123!",
+        "driver_id": ""
+      }
+    },
+    {
+      "_id": "env_production",
+      "_type": "environment",
+      "parentId": "wrk_seblak_api",
+      "name": "Production",
+      "data": {
+        "base_url": "https://api.seblak.com/api/v1",
+        "access_token": "",
+        "refresh_token": "",
+        "user_id": "",
+        "order_id": "",
+        "admin_token": ""
+      }
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_seblak_api",
+      "name": "🔐 Authentication",
+      "description": "Register, login, token refresh, logout"
+    },
+    {
+      "_id": "req_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Register New User",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/register",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"full_name\": \"Rina Wijaya\",\n  \"phone\": \"+6281234567890\"\n}"
+      }
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login User",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+      }
+    },
+    {
+      "_id": "req_refresh_token",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Refresh Access Token",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/refresh",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refresh_token\": \"{{ refresh_token }}\"\n}"
+      }
+    },
+    {
+      "_id": "fld_menu",
+      "_type": "request_group",
+      "parentId": "wrk_seblak_api",
+      "name": "🍜 Menu",
+      "description": "Browse menu categories and items"
+    },
+    {
+      "_id": "req_get_categories",
+      "_type": "request",
+      "parentId": "fld_menu",
+      "name": "Get All Categories",
+      "method": "GET",
+      "url": "{{ base_url }}/menu/categories"
+    },
+    {
+      "_id": "req_get_items_by_category",
+      "_type": "request",
+      "parentId": "fld_menu",
+      "name": "Get Items by Category",
+      "method": "GET",
+      "url": "{{ base_url }}/menu/categories/uuid-cat-1/items?limit=10&offset=0"
+    },
+    {
+      "_id": "req_search_items",
+      "_type": "request",
+      "parentId": "fld_menu",
+      "name": "Search Menu Items",
+      "method": "GET",
+      "url": "{{ base_url }}/menu/items?search=bakso&limit=10"
+    },
+    {
+      "_id": "req_get_item_detail",
+      "_type": "request",
+      "parentId": "fld_menu",
+      "name": "Get Item Detail",
+      "method": "GET",
+      "url": "{{ base_url }}/menu/items/{{ menu_item_id }}"
+    },
+    {
+      "_id": "fld_orders",
+      "_type": "request_group",
+      "parentId": "wrk_seblak_api",
+      "name": "🛒 Orders",
+      "description": "Create, list, track orders"
+    },
+    {
+      "_id": "req_create_order",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Create Order - DELIVERY",
+      "method": "POST",
+      "url": "{{ base_url }}/orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Idempotency-Key",
+          "value": "{{ $guid }}"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"order_type\": \"DELIVERY\",\n  \"level_pedas\": \"SEDANG\",\n  \"kuah_varian\": \"NORMAL\",\n  \"telur_type\": \"CEPLOK\",\n  \"rasa_type\": \"ASIN\",\n  \"payment_method\": \"QRIS\",\n  \"items\": [\n    {\"menu_item_id\": \"{{ menu_item_id }}\", \"quantity\": 2, \"special_notes\": \"tidak pakai MSG\"},\n    {\"menu_item_id\": \"uuid-item-3\", \"quantity\": 1}\n  ],\n  \"delivery_address\": \"Jl. Contoh No. 123, Jakarta Selatan\",\n  \"delivery_latitude\": -6.2293,\n  \"delivery_longitude\": 106.7924,\n  \"delivery_time\": \"2024-01-15T15:30:00Z\",\n  \"customer_name\": \"Rina Wijaya\",\n  \"customer_phone\": \"+6281234567890\"\n}"
+      }
+    },
+    {
+      "_id": "req_create_order_takeaway",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Create Order - TAKE_AWAY",
+      "method": "POST",
+      "url": "{{ base_url }}/orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"order_type\": \"TAKE_AWAY\",\n  \"level_pedas\": \"PEDAS\",\n  \"kuah_varian\": \"BANJIR\",\n  \"telur_type\": \"ORAK_ARIK\",\n  \"rasa_type\": \"MANIS\",\n  \"payment_method\": \"CASH\",\n  \"items\": [{\"menu_item_id\": \"{{ menu_item_id }}\", \"quantity\": 3}],\n  \"pickup_time\": \"ASAP\"\n}"
+      }
+    },
+    {
+      "_id": "req_create_order_dinein",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Create Order - DINE_IN",
+      "method": "POST",
+      "url": "{{ base_url }}/orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"order_type\": \"DINE_IN\",\n  \"level_pedas\": \"TIDAK_PEDAS\",\n  \"kuah_varian\": \"NYEMEK\",\n  \"telur_type\": \"CEPLOK\",\n  \"rasa_type\": \"ASIN\",\n  \"payment_method\": \"CASH\",\n  \"items\": [{\"menu_item_id\": \"{{ menu_item_id }}\", \"quantity\": 1}],\n  \"table_number\": 3\n}"
+      }
+    },
+    {
+      "_id": "req_list_orders",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "List My Orders",
+      "method": "GET",
+      "url": "{{ base_url }}/orders?limit=10&offset=0",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_get_order",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Get Order Detail",
+      "method": "GET",
+      "url": "{{ base_url }}/orders/{{ order_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_track_order",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Track Order (Live)",
+      "method": "GET",
+      "url": "{{ base_url }}/orders/{{ order_id }}/tracking",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_get_status_history",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Get Status History",
+      "method": "GET",
+      "url": "{{ base_url }}/orders/{{ order_id }}/status-history",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_cancel_order",
+      "_type": "request",
+      "parentId": "fld_orders",
+      "name": "Cancel Order",
+      "method": "DELETE",
+      "url": "{{ base_url }}/orders/{{ order_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_payments",
+      "_type": "request_group",
+      "parentId": "wrk_seblak_api",
+      "name": "💳 Payments",
+      "description": "Payment creation and webhooks"
+    },
+    {
+      "_id": "req_create_payment",
+      "_type": "request",
+      "parentId": "fld_payments",
+      "name": "Create Payment",
+      "method": "POST",
+      "url": "{{ base_url }}/orders/{{ order_id }}/payment",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"payment_method\": \"QRIS\"\n}"
+      }
+    },
+    {
+      "_id": "req_get_payment",
+      "_type": "request",
+      "parentId": "fld_payments",
+      "name": "Get Payment Status",
+      "method": "GET",
+      "url": "{{ base_url }}/orders/{{ order_id }}/payment",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ access_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_admin",
+      "_type": "request_group",
+      "parentId": "wrk_seblak_api",
+      "name": "📊 Admin Dashboard",
+      "description": "Admin operations"
+    },
+    {
+      "_id": "req_admin_login",
+      "_type": "request",
+      "parentId": "fld_admin",
+      "name": "Admin Login",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@seblak.com\",\n  \"password\": \"AdminPassword123!\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_dashboard",
+      "_type": "request",
+      "parentId": "fld_admin",
+      "name": "Get Dashboard",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/dashboard",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_admin_orders",
+      "_type": "request_group",
+      "parentId": "fld_admin",
+      "name": "📋 Order Management"
+    },
+    {
+      "_id": "req_admin_list_orders",
+      "_type": "request",
+      "parentId": "fld_admin_orders",
+      "name": "List All Orders",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/orders?limit=50&offset=0&status=PENDING",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_admin_update_status",
+      "_type": "request",
+      "parentId": "fld_admin_orders",
+      "name": "Update Order Status",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/orders/{{ order_id }}/status",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"CONFIRMED\",\n  \"reason\": \"Kitchen confirmed\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_rollback_status",
+      "_type": "request",
+      "parentId": "fld_admin_orders",
+      "name": "Rollback Order Status",
+      "method": "POST",
+      "url": "{{ base_url }}/admin/orders/{{ order_id }}/rollback-status",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"targetStatus\": \"CONFIRMED\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_assign_driver",
+      "_type": "request",
+      "parentId": "fld_admin_orders",
+      "name": "Assign Driver",
+      "method": "POST",
+      "url": "{{ base_url }}/admin/orders/{{ order_id }}/assign-driver",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"driver_id\": \"{{ driver_id }}\"\n}"
+      }
+    },
+    {
+      "_id": "fld_admin_menu",
+      "_type": "request_group",
+      "parentId": "fld_admin",
+      "name": "📦 Menu Management"
+    },
+    {
+      "_id": "req_admin_list_items",
+      "_type": "request",
+      "parentId": "fld_admin_menu",
+      "name": "List All Menu Items",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/menu/items?limit=50&offset=0",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_admin_create_item",
+      "_type": "request",
+      "parentId": "fld_admin_menu",
+      "name": "Create Menu Item",
+      "method": "POST",
+      "url": "{{ base_url }}/admin/menu/items",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Bakso Premium\",\n  \"category_id\": \"uuid-cat-2\",\n  \"price_per_unit\": 3000,\n  \"unit\": \"pcs\",\n  \"stock_quantity\": 100,\n  \"low_stock_threshold\": 20,\n  \"description\": \"Bakso premium dengan daging sapi 100%\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_update_item",
+      "_type": "request",
+      "parentId": "fld_admin_menu",
+      "name": "Update Menu Item",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/menu/items/{{ menu_item_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"price_per_unit\": 3500,\n  \"description\": \"Updated description\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_update_stock",
+      "_type": "request",
+      "parentId": "fld_admin_menu",
+      "name": "Update Item Stock",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/menu/items/{{ menu_item_id }}/stock",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"action\": \"STOCK_IN\",\n  \"quantity\": 50,\n  \"notes\": \"Morning restock\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_stock_history",
+      "_type": "request",
+      "parentId": "fld_admin_menu",
+      "name": "Get Stock History",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/menu/items/{{ menu_item_id }}/stock-history",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_admin_drivers",
+      "_type": "request_group",
+      "parentId": "fld_admin",
+      "name": "🚗 Delivery Management"
+    },
+    {
+      "_id": "req_admin_list_drivers",
+      "_type": "request",
+      "parentId": "fld_admin_drivers",
+      "name": "List All Drivers",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/drivers",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_admin_add_driver",
+      "_type": "request",
+      "parentId": "fld_admin_drivers",
+      "name": "Add New Driver",
+      "method": "POST",
+      "url": "{{ base_url }}/admin/drivers",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Budi Santoso\",\n  \"phone\": \"+6281234567899\",\n  \"vehicle_info\": \"Motorcycle - Orange Bike\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_update_driver_location",
+      "_type": "request",
+      "parentId": "fld_admin_drivers",
+      "name": "Update Driver Location",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/drivers/{{ driver_id }}/location",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"current_latitude\": -6.2250,\n  \"current_longitude\": 106.7950\n}"
+      }
+    },
+    {
+      "_id": "req_admin_driver_orders",
+      "_type": "request",
+      "parentId": "fld_admin_drivers",
+      "name": "Get Driver's Orders",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/drivers/{{ driver_id }}/orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_admin_payments",
+      "_type": "request_group",
+      "parentId": "fld_admin",
+      "name": "💰 Payment Management"
+    },
+    {
+      "_id": "req_admin_list_payments",
+      "_type": "request",
+      "parentId": "fld_admin_payments",
+      "name": "List All Payments",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/payments?limit=50",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_admin_confirm_payment",
+      "_type": "request",
+      "parentId": "fld_admin_payments",
+      "name": "Confirm Payment (Manual)",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/payments/{{ payment_id }}/confirm",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"notes\": \"Bank transfer verified\"\n}"
+      }
+    },
+    {
+      "_id": "req_admin_payment_reconciliation",
+      "_type": "request",
+      "parentId": "fld_admin_payments",
+      "name": "Daily Reconciliation",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/payments/reconciliation?date=2024-01-15",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "fld_admin_settings",
+      "_type": "request_group",
+      "parentId": "fld_admin",
+      "name": "⚙️ Settings"
+    },
+    {
+      "_id": "req_admin_get_settings",
+      "_type": "request",
+      "parentId": "fld_admin_settings",
+      "name": "Get Store Settings",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/settings",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_admin_update_settings",
+      "_type": "request",
+      "parentId": "fld_admin_settings",
+      "name": "Update Store Settings",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/settings",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"store_name\": \"Seblak Prasmanan\",\n  \"phone\": \"+62215551234\",\n  \"address\": \"Jl. Raya Tengah No. 123, Jakarta\",\n  \"latitude\": -6.2300,\n  \"longitude\": 106.7900,\n  \"delivery_radius_km\": 10,\n  \"base_delivery_fee\": 10000\n}"
+      }
+    },
+    {
+      "_id": "req_admin_operating_hours",
+      "_type": "request",
+      "parentId": "fld_admin_settings",
+      "name": "Get Operating Hours",
+      "method": "GET",
+      "url": "{{ base_url }}/admin/settings/hours",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_admin_update_hours",
+      "_type": "request",
+      "parentId": "fld_admin_settings",
+      "name": "Update Operating Hours",
+      "method": "PATCH",
+      "url": "{{ base_url }}/admin/settings/hours",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ admin_token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"monday\": {\"open\": \"10:00\", \"close\": \"22:00\", \"is_open\": true},\n  \"tuesday\": {\"open\": \"10:00\", \"close\": \"22:00\", \"is_open\": true},\n  \"wednesday\": {\"open\": \"10:00\", \"close\": \"22:00\", \"is_open\": true},\n  \"thursday\": {\"open\": \"10:00\", \"close\": \"22:00\", \"is_open\": true},\n  \"friday\": {\"open\": \"10:00\", \"close\": \"23:00\", \"is_open\": true},\n  \"saturday\": {\"open\": \"10:00\", \"close\": \"23:00\", \"is_open\": true},\n  \"sunday\": {\"open\": \"11:00\", \"close\": \"22:00\", \"is_open\": true}\n}"
+      }
+    }
+  ]
+}
