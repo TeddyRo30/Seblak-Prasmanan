@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE `orders` MODIFY `paymentStatus` ENUM('PENDING', 'CONFIRMED', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING';
+
+-- AlterTable
+ALTER TABLE `payment_transactions` MODIFY `status` ENUM('PENDING', 'CONFIRMED', 'FAILED', 'REFUNDED') NOT NULL;
+
+-- AlterTable
+ALTER TABLE `payments` MODIFY `status` ENUM('PENDING', 'CONFIRMED', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING';

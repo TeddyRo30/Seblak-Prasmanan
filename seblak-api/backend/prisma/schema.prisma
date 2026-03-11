@@ -50,6 +50,7 @@ enum PaymentStatus {
   PENDING
   CONFIRMED
   FAILED
+  REFUNDED
 }
 
 enum PaymentGateway {

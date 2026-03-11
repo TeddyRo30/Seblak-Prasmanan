@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import menuRoutes from './routes/menu.js';
 import orderRoutes from './routes/order.js';
+import paymentRoutes from './routes/payment.js';
 
 const app = express();
 
@@ -57,6 +58,9 @@ app.use('/api/v1/menu', menuRoutes);
 
 // Order routes
 app.use('/api/v1/orders', orderRoutes);
+
+// Payment routes
+app.use('/api/v1', paymentRoutes);
 
 // API v1 status
 app.get('/api/v1', (req, res) => {
