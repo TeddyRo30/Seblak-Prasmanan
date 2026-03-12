@@ -7,6 +7,7 @@ import menuRoutes from './routes/menu.js';
 import orderRoutes from './routes/order.js';
 import paymentRoutes from './routes/payment.js';
 import dashboardRoutes from './routes/dashboard.js';
+import userRoutes from './routes/user.js';
 
 const app = express();
 
@@ -65,6 +66,9 @@ app.use('/api/v1', paymentRoutes);
 
 // Dashboard routes
 app.use('/api/v1/admin', dashboardRoutes);
+
+// User routes
+app.use('/api/v1/admin', userRoutes);
 
 // API v1 status
 app.get('/api/v1', (req, res) => {
