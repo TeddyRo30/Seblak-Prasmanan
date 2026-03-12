@@ -2,6 +2,7 @@
 import express from 'express';
 import dashboardController from '../controllers/dashboardController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import advancedOrderController from '../controllers/advancedOrderController.js';
 
 const router = express.Router();
 
@@ -88,6 +89,14 @@ router.get(
   authenticate,
   authorize('admin'),
   dashboardController.getCustomerSummary
+);
+
+// GET /api/v1/admin/orders/cancellation-reasons
+router.get(
+  '/orders/cancellation-reasons',
+  authenticate,
+  authorize('admin'),
+  advancedOrderController.getCancellationReasons
 );
 
 export default router;

@@ -2,6 +2,7 @@
 import express from 'express';
 import orderController from '../controllers/orderController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import advancedOrderController from '../controllers/advancedOrderController.js';
 
 const router = express.Router();
 
@@ -48,5 +49,24 @@ router.patch('/admin/:id/status', authenticate, authorize('admin', 'kitchen_staf
 // PATCH /api/v1/orders/admin/:id/assign-driver
 // Assign driver to order (Admin)
 router.patch('/admin/:id/assign-driver', authenticate, authorize('admin'), orderController.assignDriver);
+
+/**
+ * ===== ADVANCED ORDER ROUTES =====
+ */
+
+// PATCH /api/v1/orders/:id/notes
+router.patch('/:id/notes', authenticate, advancedOrderController.addOrderNotes);
+
+// GET /api/v1/orders/:id/timeline
+router.get('/:id/timeline', advancedOrderController.getOrderTimeline);
+
+// GET /api/v1/orders/:id/summary
+router.get('/:id/summary', advancedOrderController.getOrderSummary);
+
+// GET /api/v1/orders/export
+router.get('/export', authenticate, advancedOrderController.exportOrders);
+
+// POST /api/v1/orders/:orderId/items/:menuItemId/review
+router.post('/:orderId/items/:menuItemId/review', authenticate, advancedOrderController.addItemReview);
 
 export default router;

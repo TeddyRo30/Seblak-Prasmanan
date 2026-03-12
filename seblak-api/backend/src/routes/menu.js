@@ -2,6 +2,7 @@
 import express from 'express';
 import menuController from '../controllers/menuController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import advancedOrderController from '../controllers/advancedOrderController.js';
 
 const router = express.Router();
 
@@ -48,5 +49,8 @@ router.patch('/admin/items/:id/stock', authenticate, authorize('admin'), menuCon
 
 // GET /api/v1/admin/menu/low-stock
 router.get('/admin/low-stock', authenticate, authorize('admin'), menuController.getLowStockItems);
+
+// GET /api/v1/menu/items/:id/reviews
+router.get('/items/:menuItemId/reviews', advancedOrderController.getItemReviews);
 
 export default router;
