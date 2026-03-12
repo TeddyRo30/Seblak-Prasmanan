@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 // ===== ENUMS =====
@@ -107,23 +108,48 @@ enum MenuItemUnit {
 // ===== MODELS =====
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  passwordHash String
-  fullName  String
-  phone     String?
-  role      UserRole @default(customer)
-  isActive  Boolean  @default(true)
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  fullName          String
+  phone             String?
+  role              String    @default("customer")
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  addresses Address[]
-  orders    Order[]
-  activityLogs ActivityLog[]
+  // Driver fields
+  driverStatus      String?   @default("offline")
+  currentLat        Float?    @default(0)
+  currentLng        Float?    @default(0)
+  vehicleType       String?
+  vehicleLicense    String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  driverOrders Order[] @relation("DriverOrders")
+  // Relations
+  addresses         Address[]
+  orders            Order[]
+  activityLogs      ActivityLog[]
+  driverOrders      Order[]   @relation("DriverOrders")
+  driverRatings     DriverRating[] @relation("DriverRatings")
+  givenRatings      DriverRating[] @relation("CustomerRatings")
 
   @@map("users")
+}
+
+model DriverRating {
+  id          String    @id @default(cuid())
+  driverId    String
+  customerId  String
+  rating      Int
+  comment     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  driver      User      @relation("DriverRatings", fields: [driverId], references: [id], onDelete: Cascade)
+  customer    User      @relation("CustomerRatings", fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, customerId])
+  @@map("driver_ratings")
 }
 
 model Address {
