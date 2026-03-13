@@ -91,4 +91,83 @@ export const orderService = {
     });
     return response.data;
   },
+
+  // ===== ADMIN FUNCTIONS =====
+
+  // Get all orders (admin)
+  adminGetAllOrders: async (params?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ orders: Order[]; total: number }> => {
+    const response: any = await api.get('/admin/orders/all', { params });
+    return {
+      orders: response.data?.orders || [],
+      total: response.data?.total || 0,
+    };
+  },
+
+  // Update order status (admin)
+  adminUpdateOrderStatus: async (
+    orderId: string,
+    newStatus: string,
+    reason?: string
+  ): Promise<void> => {
+    await api.patch(`/admin/orders/${orderId}/status`, {
+      newStatus,
+      reason,
+    });
+  },
+
+  // Assign driver to order (admin)
+  adminAssignDriver: async (
+    orderId: string,
+    driverId: string
+  ): Promise<void> => {
+    await api.patch(`/admin/orders/${orderId}/assign-driver`, {
+      driverId,
+    });
+  },
+
+  // Get dashboard data (admin)
+  adminGetDashboard: async (): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard');
+    return response.data;
+  },
+
+  // Get dashboard metrics (admin)
+  adminGetMetrics: async (): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard/metrics');
+    return response.data;
+  },
+
+  // Get orders overview (admin)
+  adminGetOrdersOverview: async (): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard/orders');
+    return response.data;
+  },
+
+  // Get revenue analytics (admin)
+  adminGetRevenue: async (params?: any): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard/revenue', { params });
+    return response.data;
+  },
+
+  // Get top items (admin)
+  adminGetTopItems: async (): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard/top-items');
+    return response.data;
+  },
+
+  // Get payment statistics (admin)
+  adminGetPaymentStats: async (): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard/payment-methods');
+    return response.data;
+  },
+
+  // Get low stock items (admin)
+  adminGetLowStock: async (): Promise<any> => {
+    const response: any = await api.get('/admin/dashboard/low-stock');
+    return response.data;
+  },
 };
