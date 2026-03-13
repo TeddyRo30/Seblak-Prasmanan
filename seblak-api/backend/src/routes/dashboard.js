@@ -3,6 +3,7 @@ import express from 'express';
 import dashboardController from '../controllers/dashboardController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import advancedOrderController from '../controllers/advancedOrderController.js';
+import analyticsController from '../controllers/analyticsController.js';
 
 const router = express.Router();
 
@@ -97,6 +98,50 @@ router.get(
   authenticate,
   authorize('admin'),
   advancedOrderController.getCancellationReasons
+);
+
+/**
+ * ===== ANALYTICS ROUTES =====
+ */
+
+// GET /api/v1/admin/analytics/sales
+router.get(
+  '/analytics/sales',
+  authenticate,
+  authorize('admin'),
+  analyticsController.getSalesAnalytics
+);
+
+// GET /api/v1/admin/analytics/customers
+router.get(
+  '/analytics/customers',
+  authenticate,
+  authorize('admin'),
+  analyticsController.getCustomerAnalytics
+);
+
+// GET /api/v1/admin/analytics/orders
+router.get(
+  '/analytics/orders',
+  authenticate,
+  authorize('admin'),
+  analyticsController.getOrderAnalytics
+);
+
+// GET /api/v1/admin/analytics/items
+router.get(
+  '/analytics/items',
+  authenticate,
+  authorize('admin'),
+  analyticsController.getItemAnalytics
+);
+
+// GET /api/v1/admin/analytics/report
+router.get(
+  '/analytics/report',
+  authenticate,
+  authorize('admin'),
+  analyticsController.getComprehensiveReport
 );
 
 export default router;
