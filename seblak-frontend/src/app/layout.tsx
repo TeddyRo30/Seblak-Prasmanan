@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
+import { ToastContainer } from '@/components/ui/Toast';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             {children}
+            <ToastContainer />
           </CartProvider>
         </AuthProvider>
       </body>
