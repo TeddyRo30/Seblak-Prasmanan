@@ -132,8 +132,27 @@ model User {
   driverOrders      Order[]   @relation("DriverOrders")
   driverRatings     DriverRating[] @relation("DriverRatings")
   givenRatings      DriverRating[] @relation("CustomerRatings")
+  notifications     Notification[]
 
   @@map("users")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String    // ORDER_CONFIRMED, ORDER_READY, etc
+  title     String
+  message   String
+  data      String?   // JSON data
+  isRead    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
 }
 
 model DriverRating {

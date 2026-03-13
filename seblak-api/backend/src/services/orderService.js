@@ -1,6 +1,7 @@
 // src/services/orderService.js
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import notificationService from './notificationService.js';
 
 const prisma = new PrismaClient();
 
@@ -416,6 +417,16 @@ const updateOrderStatus = async (orderId, newStatus, reason = null, changedByUse
         reason
       }
     });
+
+    if (newStatus === 'CONFIRMED') {
+      await notificationService.notifyOrderConfirmed(orderId);
+    } else if (newStatus === 'READY') {
+      await notificationService.notifyOrderReady(orderId);
+    } else if (newStatus === 'ON_DELIVERY') {
+      await notificationService.notifyOrderOnDelivery(orderId);
+    } else if (newStatus === 'COMPLETED') {
+      await notificationService.notifyOrderCompleted(orderId);
+}
 
     return updated;
   } catch (error) {

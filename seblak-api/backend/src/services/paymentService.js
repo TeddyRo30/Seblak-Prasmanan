@@ -1,5 +1,6 @@
 // src/services/paymentService.js
 import { PrismaClient } from '@prisma/client';
+import notificationService from './notificationService.js';
 
 const prisma = new PrismaClient();
 
@@ -197,6 +198,8 @@ const confirmPayment = async (paymentId, data = {}) => {
       data: { paymentStatus: 'CONFIRMED' }
     });
 
+    await notificationService.notifyOrderConfirmed(payment.orderId);
+    
     return confirmed;
   } catch (error) {
     throw error;

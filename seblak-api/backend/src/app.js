@@ -9,6 +9,7 @@ import paymentRoutes from './routes/payment.js';
 import dashboardRoutes from './routes/dashboard.js';
 import userRoutes from './routes/user.js';
 import driverRoutes from './routes/driver.js';
+import notificationRoutes from './routes/notification.js';
 
 const app = express();
 
@@ -74,6 +75,9 @@ app.use('/api/v1/admin', userRoutes);
 // Driver management routes
 app.use('/api/v1/admin', driverRoutes);
 app.use('/api/v1', driverRoutes); 
+
+// Notification routes
+app.use('/api/v1/notifications', notificationRoutes);
 
 // API v1 status
 app.get('/api/v1', (req, res) => {
