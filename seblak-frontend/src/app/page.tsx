@@ -2,68 +2,63 @@
 
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { Navbar } from '@/components/layout';
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-red-600">🍜 Seblak Prasmanan</h1>
-            <nav className="space-x-4">
-              {isAuthenticated ? (
-                <>
-                  <span className="text-gray-600">Welcome, {user?.fullName}</span>
-                  <Link href="/dashboard" className="text-blue-600 hover:text-blue-800">
-                    Dashboard
-                  </Link>
-                  <button className="text-red-600 hover:text-red-800">Logout</button>
-                </>
-              ) : (
-                <>
-                  <Link href="/login" className="text-blue-600 hover:text-blue-800">
-                    Login
-                  </Link>
-                  <Link href="/register" className="text-blue-600 hover:text-blue-800">
-                    Register
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
 
-      {/* Content */}
+      {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to Seblak Prasmanan
-          </h2>
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            Welcome to Seblak Prasmanan 🍜
+          </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Order delicious seblak with your favorite toppings
+            Order delicious seblak with your favorite toppings and enjoy fast delivery!
           </p>
 
           {isAuthenticated ? (
             <Link
               href="/menu"
-              className="inline-block bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700"
+              className="inline-block bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition"
             >
-              Order Now
+              Order Now →
             </Link>
           ) : (
             <Link
               href="/login"
-              className="inline-block bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700"
+              className="inline-block bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition"
             >
-              Get Started
+              Get Started →
             </Link>
           )}
         </div>
+
+        {/* Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+          <div className="bg-white p-6 rounded-lg shadow text-center">
+            <div className="text-4xl mb-4">⚡</div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Fast Delivery</h3>
+            <p className="text-gray-600">Get your delicious seblak delivered in 30 minutes!</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow text-center">
+            <div className="text-4xl mb-4">🎯</div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Customize</h3>
+            <p className="text-gray-600">Choose your spice level, sauce, and toppings!</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow text-center">
+            <div className="text-4xl mb-4">💳</div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Easy Payment</h3>
+            <p className="text-gray-600">Multiple payment methods available for your convenience.</p>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
